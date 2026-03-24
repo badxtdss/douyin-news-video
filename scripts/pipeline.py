@@ -22,17 +22,23 @@ def run_script(cmd, desc):
 def main():
     parser = argparse.ArgumentParser(description="抖音新闻视频一键全流程")
     
-    # 内容参数
+    # 内容参数（灵活输入，自动判断新闻类型）
     parser.add_argument("--title", required=True, help="新闻标题")
     parser.add_argument("--subtitle", default="", help="副标题")
-    parser.add_argument("--tag", default="新闻", help="标签")
-    parser.add_argument("--points", nargs="*", default=[], help="要点")
-    parser.add_argument("--bio", default="", help="人物信息")
-    parser.add_argument("--quotes", nargs="*", default=[], help="网友评论")
-    parser.add_argument("--warning", default="", help="警示信息")
-    parser.add_argument("--symptoms", nargs="*", default=[], help="症状列表")
-    parser.add_argument("--birth-year", default="", help="出生年份")
-    parser.add_argument("--quote-text", default="", help="引用语")
+    parser.add_argument("--tag", default="", help="标签（不填则自动判断）")
+    parser.add_argument("--bullets", nargs="*", default=[], help="要点列表")
+    parser.add_argument("--context", nargs="*", default=[], help="背景信息")
+    parser.add_argument("--data", nargs="*", default=[], help="关键数据（标签:数值）")
+    parser.add_argument("--timeline", nargs="*", default=[], help="时间线事件")
+    parser.add_argument("--quotes", nargs="*", default=[], help="各方引用（内容:来源）")
+    parser.add_argument("--highlight", default="", help="核心观点")
+    parser.add_argument("--ending", default="", help="结尾文字")
+    
+    # 兼容旧版参数
+    parser.add_argument("--points", nargs="*", default=[], help="要点（兼容旧版）")
+    parser.add_argument("--bio", default="", help="人物信息（兼容旧版）")
+    parser.add_argument("--warning", default="", help="警示（兼容旧版）")
+    parser.add_argument("--symptoms", nargs="*", default=[], help="要点（兼容旧版）")
     
     # 视频参数
     parser.add_argument("--bgm", default="起风了 纯音乐", help="BGM关键词")
@@ -53,17 +59,18 @@ def main():
     video_path = output_dir / "final.mp4"
     
     # 第1步：生成幻灯片
+    bullets = args.bullets or args.points
     slides_cmd = f'''python3 "{SCRIPTS_DIR}/create_slides.py" \
         --title "{args.title}" \
         --subtitle "{args.subtitle}" \
         --tag "{args.tag}" \
-        --points {" ".join(f'"{p}"' for p in args.points)} \
-        --bio "{args.bio}" \
+        --bullets {" ".join(f'"{b}"' for b in bullets)} \
+        --context {" ".join(f'"{c}"' for c in args.context)} \
+        --data {" ".join(f'"{d}"' for d in args.data)} \
+        --timeline {" ".join(f'"{t}"' for t in args.timeline)} \
         --quotes {" ".join(f'"{q}"' for q in args.quotes)} \
-        --warning "{args.warning}" \
-        --symptoms {" ".join(f'"{s}"' for s in args.symptoms)} \
-        --birth-year "{args.birth_year}" \
-        --quote-text "{args.quote_text}" \
+        --highlight "{args.highlight}" \
+        --ending "{args.ending}" \
         --output "{output_dir}"'''
     run_script(slides_cmd, "第1步：生成幻灯片")
     
