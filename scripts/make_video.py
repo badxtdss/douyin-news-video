@@ -88,7 +88,8 @@ def make_video(slides_dir, bgm_path, duration, output_path):
         scales.append(f"[{i}:v]scale=1080:1440,format=yuv420p,setsar=1[v{i}]")
     
     # xfade链
-    xfade_chain = "[v0][v1]xfade=transition=fade:duration=0.8:offset={offset}[m01]"
+    first_offset = page_duration
+    xfade_chain = f"[v0][v1]xfade=transition=fade:duration=0.8:offset={first_offset}[m01]"
     offsets = [page_duration]
     for i in range(2, n):
         prev = f"m{i-2}{i-1}" if i > 2 else "m01"
