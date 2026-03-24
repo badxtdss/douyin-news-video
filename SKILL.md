@@ -39,8 +39,22 @@ python scripts/news_video.py --config news_config.json
 
 | 页 | 内容 |
 |---|---|
+| 标题页 | 醒目大字体 + 编号 |
 | 要点+时间线 | 核心信息 + 事件脉络 |
 | 影响分析 | 经济/市场/社会影响 |
+
+## 多条新闻合并
+
+- 自动生成总封面（"共N条重要新闻"）
+- 每条新闻3页（标题/要点+时间线/影响），N条 = 3N+1页
+- 合并为一个视频，fade转场
+- 一个标题、一组标签、一次发布
+
+## 视频结构示例（5条新闻 = 16页）
+
+```
+封面 → #01 标题 → 要点 → 影响 → #02 标题 → 要点 → 影响 → ... → #05 标题 → 要点 → 影响
+```
 
 ## 多条新闻合并
 
@@ -65,6 +79,7 @@ python scripts/news_video.py --config news_config.json
 | output | 输出目录 | ❌ |
 | publish | 是否发布到抖音 | ❌ |
 | news[].title | 单条新闻标题 | ✅ |
+| news[].subtitle | 副标题（标题页显示） | ❌ |
 | news[].bullets | 要点列表 | ✅ |
 | news[].timeline | 时间线事件 | ❌ |
 | news[].impact_title | 影响分析标题 | ❌ |

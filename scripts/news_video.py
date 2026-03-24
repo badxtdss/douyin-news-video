@@ -44,6 +44,23 @@ h2{{font-size:36px;font-weight:400;color:#e53e3e;letter-spacing:4px;margin-top:3
 <div class="date">{datetime.now().strftime("%Y.%m.%d")}</div></body></html>'''
 
 
+def gen_news_title(news_num, title, sub):
+    """每条新闻的标题页（醒目大字）"""
+    return f'''<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{width:1080px;height:1440px;background:#0a0a0a;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;overflow:hidden;position:relative}}
+.num{{font-size:120px;font-weight:900;color:rgba(229,62,62,0.15);position:absolute;top:60px;right:80px;letter-spacing:6px}}
+.dot{{width:8px;height:8px;background:#e53e3e;border-radius:50%;margin-bottom:30px}}
+h1{{font-size:72px;font-weight:900;letter-spacing:6px;text-align:center;line-height:1.5;max-width:900px;margin-bottom:24px}}
+h2{{font-size:32px;font-weight:400;color:#e53e3e;letter-spacing:4px;text-align:center;line-height:1.6;padding:0 60px}}
+</style></head><body>
+<div class="num">#{news_num:02d}</div>
+<div class="dot"></div>
+<h1>{title}</h1>
+{"<h2>"+sub+"</h2>" if sub else ""}
+</body></html>'''
+
+
 def gen_content(bullets, timeline):
     """要点 + 时间线 + 经济影响合并页"""
     items = ""
@@ -176,16 +193,22 @@ def main():
     for i, news in enumerate(news_list, 1):
         print(f"📄 [{i}/{len(news_list)}] {news.get('title','')[:20]}...")
         
-        # 1) 要点+时间线
+        # 1) 标题页（醒目大字）
+        title_html = gen_news_title(i, news.get("title",""), news.get("subtitle",""))
+        p = html_slide(title_html, str(output_dir / f"slide_{i}a_title.html"))
+        pngs.append(p)
+        print(f"   ✅ 标题页")
+        
+        # 2) 要点+时间线
         content_html = gen_content(news.get("bullets",[]), news.get("timeline",[]))
-        p = html_slide(content_html, str(output_dir / f"slide_{i}a_content.html"))
+        p = html_slide(content_html, str(output_dir / f"slide_{i}b_content.html"))
         pngs.append(p)
         print(f"   ✅ 要点+时间线")
         
-        # 2) 影响分析
+        # 3) 影响分析
         impact_title = news.get("impact_title", "经济影响")
         impact_html = gen_impact(impact_title, news.get("impact",[]))
-        p = html_slide(impact_html, str(output_dir / f"slide_{i}b_impact.html"))
+        p = html_slide(impact_html, str(output_dir / f"slide_{i}c_impact.html"))
         pngs.append(p)
         print(f"   ✅ 影响分析")
     
