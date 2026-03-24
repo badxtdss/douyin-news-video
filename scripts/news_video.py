@@ -14,7 +14,7 @@ import edge_tts
 
 async def run():
     text = open("{txt}", encoding="utf-8").read()
-    communicate = edge_tts.Communicate(text, "{voice}")
+    communicate = edge_tts.Communicate(text, "{voice}", rate="{rate}")
     await communicate.save("{out}")
 
 asyncio.run(run())
@@ -31,16 +31,15 @@ def ensure_edge_tts():
         import edge_tts
 
 
-def gen_tts(text, output_path, voice=DEFAULT_VOICE):
-    """生成TTS音频"""
+def gen_tts(text, output_path, voice=DEFAULT_VOICE, rate="+0%"):
+    """生成TTS音频 rate: +0% 正常, +50% 快1.5倍, -20% 慢"""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # 先将文字写入临时文件（避免转义问题）
     txt_path = output_path.with_suffix('.txt')
     txt_path.write_text(text, encoding='utf-8')
     
-    script = EDGE_TTS_SCRIPT.format(txt=str(txt_path.resolve()), voice=voice, out=str(output_path.resolve()))
+    script = EDGE_TTS_SCRIPT.format(txt=str(txt_path.resolve()), voice=voice, out=str(output_path.resolve()), rate=rate)
     r = subprocess.run(["python3", "-c", script], capture_output=True, text=True, timeout=30)
     
     txt_path.unlink(missing_ok=True)
@@ -277,6 +276,7 @@ def main():
     parser.add_argument("--bgm", default="")
     parser.add_argument("--output", default="./news_output")
     parser.add_argument("--voice", default=DEFAULT_VOICE, help="TTS语音（zh-CN-YunxiNeural 男声 / zh-CN-XiaoxiaoNeural 女声）")
+    parser.add_argument("--rate", default="+0%", help="TTS语速调整")
     parser.add_argument("--publish", action="store_true")
     parser.add_argument("--douyin-title", default="")
     parser.add_argument("--douyin-tags", default="")
@@ -294,6 +294,7 @@ def main():
     tags = config.get("tags", args.tags)
     bgm = config.get("bgm", args.bgm)
     voice = config.get("voice", args.voice)
+    rate = config.get("rate", args.rate)
     
     if not news_list:
         print("❌ 没有新闻"); sys.exit(1)
@@ -316,7 +317,7 @@ def main():
     # 封面TTS
     cover_tts = tts_text_for_cover(title, f"共{len(news_list)}条重要新闻")
     a = tts_dir / "audio_00_cover.mp3"
-    gen_tts(cover_tts, str(a), voice)
+    gen_tts(cover_tts, str(a), voice, rate)
     audios.append(a)
     print(f"   ✅ 封面（含配音）")
     
@@ -331,7 +332,7 @@ def main():
         pngs.append(p)
         t_text = tts_text_for_news_title(i, news_title, news.get("subtitle",""))
         a = tts_dir / f"audio_{i}a_title.mp3"
-        gen_tts(t_text, str(a), voice)
+        gen_tts(t_text, str(a), voice, rate)
         audios.append(a)
         print(f"   ✅ 标题页（含配音）")
         
@@ -341,7 +342,7 @@ def main():
         pngs.append(p)
         c_text = tts_text_for_content(news.get("bullets",[]), news.get("timeline",[]))
         a = tts_dir / f"audio_{i}b_content.mp3"
-        gen_tts(c_text, str(a), voice)
+        gen_tts(c_text, str(a), voice, rate)
         audios.append(a)
         print(f"   ✅ 要点+时间线（含配音）")
         
@@ -352,7 +353,7 @@ def main():
         pngs.append(p)
         imp_text = tts_text_for_impact(imp_title, news.get("impact",[]))
         a = tts_dir / f"audio_{i}c_impact.mp3"
-        gen_tts(imp_text, str(a), voice)
+        gen_tts(imp_text, str(a), voice, rate)
         audios.append(a)
         print(f"   ✅ 影响分析（含配音）")
     
